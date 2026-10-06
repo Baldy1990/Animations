@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from pathlib import Path
-import math, io, zipfile, json, hashlib
+import math, io, zipfile, json, hashlib, struct
 
 OUT=Path(__file__).resolve().parent
 ROOT=OUT/'Helldivers'/ 'Anims'
@@ -113,6 +113,40 @@ def lower_for_clock(im):
     shifted.paste(im.crop((0,0,128,62)),(0,2))
     return shifted
 
+def passport_portrait():
+    im=Image.new('1',(46,49),0);d=ImageDraw.Draw(im)
+    # Original helmet, opaque visor, respirator and armoured shoulders.
+    d.polygon([(15,3),(30,3),(36,10),(36,25),(31,33),(14,33),(9,25),(9,10)],fill=1)
+    d.polygon([(16,5),(29,5),(33,10),(32,14),(13,14),(12,10)],fill=0)
+    d.rectangle((21,5,24,13),fill=1)
+    d.polygon([(11,16),(34,16),(31,22),(14,22)],fill=0)
+    d.line((14,17,31,17),fill=1)
+    d.polygon([(17,24),(28,24),(31,29),(27,32),(18,32),(14,29)],fill=0)
+    d.rectangle((19,26,26,30),fill=1)
+    for x in (20,23,25):d.line((x,27,x,30),fill=0)
+    d.line((11,23,14,27),fill=0);d.line((34,23,31,27),fill=0)
+    d.polygon([(14,34),(31,34),(40,37),(45,48),(0,48),(5,37)],fill=1)
+    d.polygon([(14,35),(22,39),(31,35),(28,48),(17,48)],fill=0)
+    d.line((5,40,13,38),fill=0);d.line((32,38,40,40),fill=0)
+    d.rectangle((6,43,12,46),fill=0);d.line((8,44,10,44),fill=1)
+    return im
+
+portrait=passport_portrait()
+icons=OUT/'Helldivers'/'Icons'/'Passport';icons.mkdir(parents=True,exist_ok=True)
+portrait_raw=bytearray(6*49)
+for y in range(49):
+    for x in range(46):
+        if not portrait.getpixel((x,y)):portrait_raw[y*6+x//8]|=1<<(x%8)
+portrait_bmx=struct.pack('<II',46,49)+b'\x00'+bytes(portrait_raw)
+assert struct.unpack('<II',portrait_bmx[:8])==(46,49)
+assert len(portrait_bmx)==8+1+6*49
+for y in range(49):
+    for x in range(46):
+        assert bool(portrait_bmx[9+y*6+x//8]&(1<<(x%8)))==(not bool(portrait.getpixel((x,y))))
+for mood in ('happy','okay','bad'):
+    (icons/f'passport_{mood}_46x49.bmx').write_bytes(portrait_bmx)
+portrait.resize((276,294),Image.Resampling.NEAREST).convert('RGB').save(OUT/'Helldiver_passport_preview.png')
+
 manifest='Filetype: Flipper Animation Manifest\nVersion: 1\n'
 previews=[];proof={}
 for name,fn in [('SuperEarth',globe),('HellpodDrop',pod),('Stratagem',strat)]:
@@ -151,3 +185,4 @@ for f in sorted((OUT/'Helldivers').rglob('*')):
 (OUT/'Helldivers_checksums.json').write_text(json.dumps(proof,indent=2))
 (OUT/'Helldivers_README.txt').write_text('Helldivers-inspired fan animation pack for Momentum firmware.\nThree original 128x64 monochrome loops, 16 frames each, 6 fps.\nCopy Helldivers into SD Card/asset_packs, then select it in Momentum > Interface > Graphics.\nUnofficial fan artwork; no game assets or code included.\n',encoding='ascii')
 print(f'Created {len(proof)} native files; all 48 bitmap frames decoded and verified.')
+

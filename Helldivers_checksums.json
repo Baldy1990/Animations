@@ -50,5 +50,8 @@
   "Anims/SuperEarth/frame_7.bm": "363ba0c1bfade86ccfd32c144b14290c",
   "Anims/SuperEarth/frame_8.bm": "5976ade2254ff5193d11652a0b89664b",
   "Anims/SuperEarth/frame_9.bm": "363ba0c1bfade86ccfd32c144b14290c",
-  "Anims/SuperEarth/meta.txt": "2358babd33cca70971579d2b27e43673"
+  "Anims/SuperEarth/meta.txt": "2358babd33cca70971579d2b27e43673",
+  "Icons/Passport/passport_bad_46x49.bmx": "b74cebc25bbfdca94b544995b814f2c1",
+  "Icons/Passport/passport_happy_46x49.bmx": "b74cebc25bbfdca94b544995b814f2c1",
+  "Icons/Passport/passport_okay_46x49.bmx": "b74cebc25bbfdca94b544995b814f2c1"
 }
